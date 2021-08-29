@@ -28,10 +28,34 @@ fazendo as migrations:
 ./manage.py showmigrations
 ```
 
+## models e relacionamentos
+
+```py
+from django.db import models
+
+class Song(models.Model):
+    """ artist 1:N songs """
+    ...
+    # models.ForeignKey(":N relation", on_delete=models.CASCADE)
+
+class Artist(models.Model):
+    ...
+
+class Biography(models.Model):
+    """ artist 1:1 bio """
+    # models.OneToOneField(":1 relation", on_delete=models.CASCADE)
+
+
+class Playlist(models.Model):
+    """ song N:N playlist """
+    # models.ManyToManyField(":N relation")
+```
+
 ## shell
 
 ```sh
 ./manage.py shell
+# id. python manage.py shell
 ```
 
 songs > models
@@ -45,9 +69,6 @@ class Song(models.Model):
 shell
 
 ```py
-./manage.py shell
-from songs.models
-
 In [1]: from songs.models import Song
 
 In [2]: s1 = Song.objects.create(title="Fear Of The Dark", artist="Iron Maiden")
@@ -116,6 +137,8 @@ IntegrityError: NOT NULL constraint failed: songs_song.artist_id
 # instância de artista precisa ser passada
 
 In [3]: s1 = Song.objects.create(title="Welcome To The Jungle", artist=a1)
+# id. passando por id  > artist_id=a1.id
+# id. a1.song_set.create(title=title)
 
 In [4]: s1
 Out[4]: <Song: Welcome To The Jungle>
