@@ -1,65 +1,106 @@
-# musicfy 004_views
+# musicfy 005_authentication
 
-## routes
+> [Authentication](https://www.django-rest-framework.org/api-guide/authentication/#authentication) > [Permissions](https://www.django-rest-framework.org/api-guide/permissions/)
 
-Artists
+1. Criando app accounts:
 
-```py
-GET Retrieve Artist http://127.0.0.1:8000/api/artists/1
-
-GET List Artists http://127.0.0.1:8000/api/artists
-
-POST Create Artist http://127.0.0.1:8000/api/artists/
-{
-	"name": name,
-	"formed_in": formed_in,
-	"status": status,
-	"musics": [
-		{
-			"title": title
-		},
-		{
-			"title": title
-		}
-	]
-}
-
-PATCH http://127.0.0.1:8000/api/artists/1
-{
-	"name": name,
-	"formed_in": fomed_in,
-	"status": status
-}
-
-DELETE http://127.0.0.1:8000/api/artists/1
+```sh
+./manage.py startapp accounts
 ```
 
-Playlists
+2. musicfy.settings
 
 ```py
-POST http://127.0.0.1:8000/api/playlists/
-{
-	"title": title,
-	"songs": [
-		{
-			"title": title,
-			"artist": {
-				"name": name,
-				"fomed_in": fomed_in,
-				"status": status
-			}
-		},
-		{
-			"title": title,
-			"artist": {
-				"name": name,
-				"fomed_in": fomed_in,
-				"status": status
-			}
-		},
-        ...
-	]
-}
+INSTALLED_APPS = [
+    ...,
+    'rest_framework.authtoken',  # login
+    'accounts',
+]
+```
 
-GET http://127.0.0.1:8000/api/playlists/
+3. migrações de rest_framework.authtoken:
+
+```sh
+./manage.py migrate
+```
+
+4. accounts.serializers.UserSerializer
+1. accounts.views.UserView
+1. accounts.views.LoginView
+
+1. musicfy.urls
+
+NOTA: autenticação por si não permite ou nega acesso ao sistema, ela simplesmente identifica as credenciais com as quais a solicitação foi feita.
+
+# routes
+
+Accounts
+
+```
+POST Register
+{
+	"username": username,
+	"password": password,
+	"is_staff": is_staff,  # required=False
+	"is_superuser": is_superuser  # required=False
+}
+```
+
+```
+POST Login
+{
+	"username": username,
+	"password": password
+}
+```
+
+# configurando autenticação
+
+Insomnia.Accounts.Login
+
+```
+200, {"token": "aeba24253931e66786ce18e950048bc73ad9055c"}
+```
+
+Insomnia.Artists.POSTCreateArtist.Header  
+Insomnia.Artists.GETListArtists.Header
+
+```
+Authorization Token aeba24253931e66786ce18e950048bc73ad9055c
+```
+
+songs.views.Artist
+
+```py
+from rest_framework.authentication import TokenAuthentication, BasicAuthentication
+
+class ArtistView
+    authentication_classes = [TokenAuthentication, BasicAuthentication]
+    ...
+```
+
+# permissões de acesso a rota
+
+songs.views.Artist
+
+```py
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
+
+class ArtistView
+    permission_classes = [IsAuthenticatedOrReadOnly | IsAdminUser]
+    ...
+```
+
+Token padrão django não expira
+Usar JOSON Web Token Authentiation
+
+# ipdb
+
+songs.views.Artist
+
+```py
+dir(request)
+request.user
+request.user.is_staff
+request.user.is_superuser
 ```
