@@ -1,9 +1,10 @@
 from django.http import response
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Artist, Song
-from .serializers import SampleSerializer, ArtistSerializer, SongSerializer, ArtistSongsSerializer
+from songs.models import Artist, Song, Playlist
+from songs.serializers import SampleSerializer, ArtistSerializer, ArtistSongsSerializer, PlaylistSerializer
 import ipdb
 
 
@@ -13,70 +14,123 @@ class SampleView(APIView):
 
     def post(self, request):
         serializer = SampleSerializer(data=request.data)  
-        serializer.is_valid()  
-        serializer.data  
-        # ipdb.set_trace()
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(serializer.data)
 
 
-class ParamView(APIView):
-    def get(self, request, name):
-        return Response({"message": f"Hello {name}"})
-        
-    def post(self, request, name):
-        return Response({"message": f"Hello {name}"})
-
-
-class MusicfyArtistView(APIView):
+class ArtistView(APIView):
+    """ query_params ? objeto : lista de objetos """
     def get(self, request):
-        artists = Artist.objects.all()
-        # ipdb.set_trace()
+    
+        """ modo primitivo """
+    # def get(self, request, artist_id=''):
+    #     if artist_id:
+    #         artist = get_object_or_404(Artist, id=artist_id) 
+    #         id sem excessão 404: artist = Artist.objects.get(id=artist_id)
+    # 
+    #         serializer = ArtistSongsSerializer(artist)
+    #         return Response(serializer.data)
 
-        serialized = ArtistSerializer(artists, many=True)
-        # sem attrib many: AttributeError
-        # artists: list => many=True
-        # ipdb.set_trace()
-
+        if request.query_params:
+            artist = Artist.objects.filter(name__icontains=request.query_params.get('name', ''))
+        else:
+            artist = Artist.objects.all()
+        
+        serialized = ArtistSongsSerializer(artist, many=True)
         return Response(serialized.data)
 
     def post(self, request):
-        serializer = ArtistSerializer(data=request.data)
-        # data indica não tratar-se de uma instância de objeto
-
+        serializer = ArtistSongsSerializer(data=request.data)
+        
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        # ipdb.set_trace()
-        # ipdb> request.data
-        # {'name': 'Teste38', 'formed_in': 2006, 'status': 'Active', 'outro': 'pudim'}
-        # ipdb> serializer.data
-        # {'name': 'Teste38', 'formed_in': 2006, 'status': 'Active'}
-        # ipdb> serializer.validated_data
-        # OrderedDict([('name', 'Teste38'), ('formed_in', 2006), ('status', 'Active')])
-        artist = Artist.objects.get_or_create(**serializer.validated_data)[0]
+        #ipdb.set_trace()
+        validated_data = serializer.validated_data
         
-        serializer = ArtistSerializer(artist)
+        songs = validated_data.pop('songs')
+        
+        artist = Artist.objects.get_or_create(**serializer.validated_data)[0]
+        # Song.artist
 
+        song_list = []
+        for song in songs:
+            # Song.objects.get_or_create(**song, artist=artist)
+            song = Song(**song, artist=artist)
+            song_list.append(song)
+            
+        Song.objects.bulk_create(song_list)    
+            
+        serializer = ArtistSongsSerializer(artist)
         return Response(serializer.data)
 
 
-class MusicfySongView(APIView):
+class ArtistDetailView(APIView):
+    def get(self, request, artist_id=''):
+        artist = get_object_or_404(Artist, id=artist_id)
+        serializer = ArtistSongsSerializer(artist)
+        return Response(serializer.data)
+
+    def patch(self, request, artist_id=''): 
+        serializer = ArtistSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+               
+        artist = Artist.objects.filter(id=artist_id)
+
+        if not artist.exists():
+            return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        artist.update(**serializer.validated_data)
+        
+        serializer = ArtistSongsSerializer(artist, many=True)
+        
+        return Response(serializer.data)
+
+    def delete(self, request, artist_id):
+        artist = get_object_or_404(Artist, id=artist_id)
+        
+        artist.delete()
+        
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
+class PlaylistView(APIView):
     def get(self, request):
-        songs = Song.objects.all()
-
-        serialized = SongSerializer(songs, many=True)
-
-        return Response(serialized.data) 
+        playlists = Playlist.objects.all()
+        
+        serializer = PlaylistSerializer(playlists, many=True)
+        
+        return Response(serializer.data)
     
     def post(self, request):
-        serializer = ArtistSongsSerializer(data=request.data)
-
+        serializer = PlaylistSerializer(data=request.data)
+        
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        artist = Artist.objects.get_or_create(**serializer.validated_data)[0]
+        validated_data = serializer.validated_data
+
+        songs = validated_data.pop('songs')
+
+        song_list = []
         
-        serializer = ArtistSongsSerializer(artist)
-        # ipdb.set_trace()
+        for song in songs:
+            artist = song.pop('artist')
+            
+            artist = Artist.objects.get_or_create(**artist)[0]
+            
+            song = Song.objects.get_or_create(title=song['title'], artist=artist)[0]
+            
+            song_list.append(song)
+            
+        
+        playlist = Playlist.objects.get_or_create(**validated_data)[0]
+        playlist.songs.set(song_list)
+            
+        serializer = PlaylistSerializer(playlist)
+        
         return Response(serializer.data)
