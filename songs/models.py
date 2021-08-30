@@ -7,14 +7,16 @@ class Song(models.Model):
     artist = models.ForeignKey("Artist", on_delete=models.CASCADE, related_name="songs")   
 
     def __str__(self):
-        return f'{self.title}'
+        return self.title
 
 
 class Artist(models.Model):
     name = models.CharField(max_length=255, unique=True)
-
+    formed_in = models.IntegerField(default=2021)
+    status = models.CharField(default='Active', max_length=255)
+    
     def __str__(self):
-        return self.name
+        return f'{self.name} - {self.status}'
 
 
 class Biography(models.Model):
@@ -22,8 +24,14 @@ class Biography(models.Model):
     description = models.TextField()
     artist = models.OneToOneField(Artist, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return f'{self.artist} - {self.description}'
+
 
 class Playlist(models.Model):
     """ song N:N playlist """
     title = models.CharField(max_length=255)
     songs = models.ManyToManyField(Song, related_name="playlists")
+
+    def __str__(self):
+        return f'{self.title} {self.songs}'
