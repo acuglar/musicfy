@@ -1,39 +1,65 @@
-# musicfy 003_serializers
+# musicfy 004_views
 
-serialização: instâncias de models para JSON  
-desserialização: payload JSON para instânciar models
+## routes
 
-## [serializer fields](https://www.django-rest-framework.org/api-guide/fields/)
-
-## shell
-
-salvando no bd muitos objetos de uma vez:
+Artists
 
 ```py
-In [1]: from songs.models import Artist, Song
+GET Retrieve Artist http://127.0.0.1:8000/api/artists/1
 
-In [2]: artists = Artist.objects.bulk_create([
-   ...:     Artist(name="Dio"),
-   ...:     Artist(name="Black Sabbath"),
-   ...:     Artist(name="Pink Floyd"),
-   ...:     ])
-# save() included in context bulk_create()
+GET List Artists http://127.0.0.1:8000/api/artists
 
-In [3]: artists
-Out[3]: [<Artist: Dio>, <Artist: Black Sabbath>, <Artist: Pink Floyd>]
+POST Create Artist http://127.0.0.1:8000/api/artists/
+{
+	"name": name,
+	"formed_in": formed_in,
+	"status": status,
+	"musics": [
+		{
+			"title": title
+		},
+		{
+			"title": title
+		}
+	]
+}
 
-In [4]: a1 = artists[0]
+PATCH http://127.0.0.1:8000/api/artists/1
+{
+	"name": name,
+	"formed_in": fomed_in,
+	"status": status
+}
 
-In [5]: a2 = artists[1]
+DELETE http://127.0.0.1:8000/api/artists/1
+```
 
-In [6]: a3 = artists[2]
+Playlists
 
-In [7]: songs = Song.objects.bulk_create([
-    ...:     Song(title="Holy Diver", artist=a1),
-    ...:     Song(title="Rainbow In The Dark", artist=a1),
-    ...:     Song(title="A National Acrobat", artist=a2),
-    ...:     Song(title="Paranoid", artist=a2),
-    ...:     Song(title="Children Of The Grave", artist=a2),
-    ...:     Song(title="Shine On You Crazy Diamond", artist=a3),
-    ...:     ])
+```py
+POST http://127.0.0.1:8000/api/playlists/
+{
+	"title": title,
+	"songs": [
+		{
+			"title": title,
+			"artist": {
+				"name": name,
+				"fomed_in": fomed_in,
+				"status": status
+			}
+		},
+		{
+			"title": title,
+			"artist": {
+				"name": name,
+				"fomed_in": fomed_in,
+				"status": status
+			}
+		},
+        ...
+	]
+}
+
+GET http://127.0.0.1:8000/api/playlists/
 ```
