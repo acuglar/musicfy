@@ -1,8 +1,12 @@
 from django.http import response
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework import authentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
+
 from songs.models import Artist, Song, Playlist
 from songs.serializers import SampleSerializer, ArtistSerializer, ArtistSongsSerializer, PlaylistSerializer
 import ipdb
@@ -21,18 +25,18 @@ class SampleView(APIView):
 
 
 class ArtistView(APIView):
+    
+    authentication_classes = [TokenAuthentication]
+    # se Authorization (Insomnia Header) : user
+
+    permission_classes = [IsAuthenticated | IsAdminUser]
+    # trava rotas que não GET
+    
     """ query_params ? objeto : lista de objetos """
     def get(self, request):
-    
-        """ modo primitivo """
-    # def get(self, request, artist_id=''):
-    #     if artist_id:
-    #         artist = get_object_or_404(Artist, id=artist_id) 
-    #         id sem excessão 404: artist = Artist.objects.get(id=artist_id)
-    # 
-    #         serializer = ArtistSongsSerializer(artist)
-    #         return Response(serializer.data)
 
+        # ipdb.set_trace()
+    
         if request.query_params:
             artist = Artist.objects.filter(name__icontains=request.query_params.get('name', ''))
         else:
@@ -53,7 +57,6 @@ class ArtistView(APIView):
         songs = validated_data.pop('songs')
         
         artist = Artist.objects.get_or_create(**serializer.validated_data)[0]
-        # Song.artist
 
         song_list = []
         for song in songs:
