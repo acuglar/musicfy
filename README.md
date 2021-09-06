@@ -1,6 +1,7 @@
 # musicfy 005_authentication
 
-> [Authentication](https://www.django-rest-framework.org/api-guide/authentication/#authentication) > [Permissions](https://www.django-rest-framework.org/api-guide/permissions/)
+> [Authentication](https://www.django-rest-framework.org/api-guide/authentication/#authentication)  
+> [Permissions](https://www.django-rest-framework.org/api-guide/permissions/)
 
 1. Criando app accounts:
 
