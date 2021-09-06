@@ -36,7 +36,7 @@ NOTA: autenticação por si não permite ou nega acesso ao sistema, ela simplesm
 
 Accounts
 
-```
+```json
 POST Register
 {
 	"username": username,
@@ -46,7 +46,7 @@ POST Register
 }
 ```
 
-```
+```json
 POST Login
 {
 	"username": username,
@@ -58,7 +58,7 @@ POST Login
 
 Insomnia.Accounts.Login
 
-```
+```json
 200, {"token": "aeba24253931e66786ce18e950048bc73ad9055c"}
 ```
 
@@ -86,9 +86,11 @@ songs.views.Artist
 ```py
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 
-class ArtistView
+class ArtistView:
     permission_classes = [IsAuthenticatedOrReadOnly | IsAdminUser]
-    ...
+    # IsAdminUser: is_staff=True
+    # IsAuthenticated: token
+    # IsAuthenticatedOrReadOnly: apenas get não precisa do token
 ```
 
 Token padrão django não expira
