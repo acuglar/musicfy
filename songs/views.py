@@ -1,4 +1,3 @@
-from django.http import response
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework import authentication
@@ -6,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
+from django.db.utils import IntegrityError
 
 from songs.models import Artist, Song, Playlist
 from songs.serializers import SampleSerializer, ArtistSerializer, ArtistSongsSerializer, PlaylistSerializer

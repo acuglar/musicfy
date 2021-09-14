@@ -1,10 +1,14 @@
 from django.db import models
+from django.db.models.fields.related import ForeignKey
+
+from accounts.models import CustomUser
 
 
 class Artist(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    formed_in = models.IntegerField(default=2021)
-    status = models.CharField(default='Active', max_length=255)
+    formed_in = models.IntegerField()
+    status = models.CharField(max_length=255)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, null=True)
     
     def __str__(self):
         return f'{self.name} - {self.status}'
@@ -28,4 +32,4 @@ class Biography(models.Model):
 class Playlist(models.Model):
     """ song N:N playlist """
     title = models.CharField(max_length=255)
-    songs = models.ManyToManyField(Song, related_name="playlists")
+    songs = models.ManyToManyField(Song)
