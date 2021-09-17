@@ -1,5 +1,9 @@
 # musicfy 005_authentication
 
+1. criação de usuário
+2. authenticação comauthenticate
+3. gerando token para acesso as rotas
+
 > [Authentication](https://www.django-rest-framework.org/api-guide/authentication/#authentication)  
 > [Permissions](https://www.django-rest-framework.org/api-guide/permissions/)
 
@@ -14,7 +18,7 @@
 ```py
 INSTALLED_APPS = [
     ...,
-    'rest_framework.authtoken',  # login
+    'rest_framework.authtoken',
     'accounts',
 ]
 ```
@@ -107,3 +111,11 @@ request.user
 request.user.is_staff
 request.user.is_superuser
 ```
+
+# bcrypt
+
+trocando criptografia alterando a ordenação
+
+settings.PASSWORD_HASHERS
+
+! Ao trocar a criptografia, a atualização é feita no ato do login do user

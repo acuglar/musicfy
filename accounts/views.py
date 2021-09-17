@@ -1,6 +1,6 @@
 from django.contrib import auth
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User  # usuário padrão auth_user na tabela
 from django.contrib.auth.password_validation import password_changed, validate_password
 from django.core.exceptions import ValidationError
 from rest_framework import status
