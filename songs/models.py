@@ -1,14 +1,14 @@
 from django.db import models
 from django.db.models.fields.related import ForeignKey
 
-from accounts.models import CustomUser
+from django.contrib.auth.models import User
 
 
 class Artist(models.Model):
     name = models.CharField(max_length=255, unique=True)
     formed_in = models.IntegerField()
     status = models.CharField(max_length=255)
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
     
     def __str__(self):
         return f'{self.name} - {self.status}'
@@ -33,3 +33,8 @@ class Playlist(models.Model):
     """ song N:N playlist """
     title = models.CharField(max_length=255)
     songs = models.ManyToManyField(Song)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='my_playlists')
+    collaborators = models.ManyToManyField(User, related_name='playlists')
+    # user.playlist_set ref conflituosa
+    # related_name='my_playlists' => user.my_playlists
+    # related_name='my_playlists' => user.playlists

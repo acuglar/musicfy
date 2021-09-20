@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 
 from accounts.serializers import UserSerializer, LoginSerializer
-from accounts.models import CustomUser
+
 
 class UserView(APIView):
     def post(self, request):
@@ -16,15 +16,14 @@ class UserView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        if CustomUser.objects.filter(email=serializer.validated_data['email']).exists():
+        if User.objects.filter(email=serializer.validated_data['username']).exists():
             return Response({'error': 'email already exists'}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-        user = CustomUser.objects.create_user(**serializer.validated_data)
+        user = User.objects.create_user(**serializer.validated_data)
         
         serializer = UserSerializer(user)
         
         return Response(serializer.data)
-
 
 
 class LoginView(APIView):
