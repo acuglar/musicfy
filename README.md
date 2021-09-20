@@ -1,106 +1,29 @@
-# musicfy 005_authentication
+# musicfy 006_custom-user
 
-> [Authentication](https://www.django-rest-framework.org/api-guide/authentication/#authentication) > [Permissions](https://www.django-rest-framework.org/api-guide/permissions/)
+> [Authentication](https://www.django-rest-framework.org/api-guide/authentication/#authentication)  
+> [Permissions](https://www.django-rest-framework.org/api-guide/permissions/)
 
-1. Criando app accounts:
+## extendendo comportamento de User
 
-```sh
-./manage.py startapp accounts
-```
+rel 1:1 com User na classe Artist (idealmente no início do projeto)
 
-2. musicfy.settings
-
-```py
-INSTALLED_APPS = [
-    ...,
-    'rest_framework.authtoken',  # login
-    'accounts',
-]
-```
-
-3. migrações de rest_framework.authtoken:
-
-```sh
-./manage.py migrate
-```
-
-4. accounts.serializers.UserSerializer
-1. accounts.views.UserView
-1. accounts.views.LoginView
-
-1. musicfy.urls
-
-NOTA: autenticação por si não permite ou nega acesso ao sistema, ela simplesmente identifica as credenciais com as quais a solicitação foi feita.
-
-# routes
-
-Accounts
-
-```
-POST Register
-{
-	"username": username,
-	"password": password,
-	"is_staff": is_staff,  # required=False
-	"is_superuser": is_superuser  # required=False
-}
-```
-
-```
-POST Login
-{
-	"username": username,
-	"password": password
-}
-```
-
-# configurando autenticação
-
-Insomnia.Accounts.Login
-
-```
-200, {"token": "aeba24253931e66786ce18e950048bc73ad9055c"}
-```
-
-Insomnia.Artists.POSTCreateArtist.Header  
-Insomnia.Artists.GETListArtists.Header
-
-```
-Authorization Token aeba24253931e66786ce18e950048bc73ad9055c
-```
-
-songs.views.Artist
+Redefinindo User padrão:
 
 ```py
-from rest_framework.authentication import TokenAuthentication, BasicAuthentication
+# app.settings
+AUTH_USER_MODEL = 'accounts.CustomUser''
 
-class ArtistView
-    authentication_classes = [TokenAuthentication, BasicAuthentication]
-    ...
+# redefinir User para CustomUser nas views
+# VER dbeaver
 ```
 
-# permissões de acesso a rota
+## mudando definições de user no meio do proejeto
 
-songs.views.Artist
+- solução gosseira: deletar database e refazer migrations, ou;
 
-```py
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
+1. deletar dados django_migrations
+1. $ ./manage.py migrate --fake
+1. $ ./manage.py makemigrations
+1. $ ./manage.py migrate
 
-class ArtistView
-    permission_classes = [IsAuthenticatedOrReadOnly | IsAdminUser]
-    ...
-```
-
-Token padrão django não expira
-Usar JOSON Web Token Authentiation
-
-# ipdb
-
-songs.views.Artist
-
-```py
-dir(request)
-request.user
-request.user.is_staff
-request.user.is_superuser
-```
+> https://docs.djangoproject.com/en/3.2/topics/auth/customizing/#changing-to-a-custom-user-model-mid-project
