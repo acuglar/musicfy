@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.contrib.auth.base_user import BaseUserManager
 from django.db.models.manager import BaseManager
 
@@ -14,6 +14,7 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
+        # user.save(using=self._db)  > settings.DATABASES - alternando db durante o proejeto
         user.save()
         
         return user
@@ -35,11 +36,17 @@ class UserManager(BaseUserManager):
 
         
 class CustomUser(AbstractBaseUser):
+    # PermissionsMixin:  definições de superuser
+
     email = models.EmailField(blank=False, unique=True)
     fullname = models.CharField(max_length=255)
     is_admin = models.BooleanField(default=False)
+
+    # Removendo campos
+    first_name = None
+    last_name = None
     
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = 'email'  # ref auth user, padrão: username. VER AbstractUser
     REQUIRED_FIELDS = []
     
-    objects = UserManager()
+    objects = UserManager()  # CustomUser.objects 
